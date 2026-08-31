@@ -8,6 +8,7 @@
 # ---------------------------------------------------------------------------
 add_library(kratt_domain STATIC
     domain/flight_controller.cpp
+    domain/flight_state_machine.cpp
     domain/drone_service.cpp
     domain/gcs_service.cpp)
 target_include_directories(kratt_domain PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

@@ -1,77 +1,72 @@
 #pragma once
 
-#include <optional>
-
-#include "domain/geofence.hpp"
-#include "domain/types.hpp"
+#include "domain/flight_dynamics.hpp"
+#include "domain/flight_state_machine.hpp"
 
 namespace kratt::domain {
 
-/// Tuning constants of the simulated airframe.
-/// A value object injected at construction: no global, no #define, and every
-/// test can build its own airframe (e.g. a 15 m ceiling to test the take-off
-/// edge case) without touching production defaults.
-struct FlightConfig {
-    double horizontal_speed_mps{10.0};  ///< specification: fixed 10 m/s
-    double climb_speed_mps{10.0};
-    double land_speed_mps{1.0};         ///< "gently descend"
-    double takeoff_altitude_m{20.0};    ///< specification
-    double disarm_altitude_m{0.5};      ///< specification: disarm only below 0.5 m
-    double arrival_tolerance_m{0.25};
-    Instant manual_timeout{std::chrono::milliseconds{500}};
-    Geofence fence{100.0, 60.0};
-};
-
-/// The flight state machine and the 3-DOF kinematic simulation.
+/// Thin stateful shell over the functional core.
 ///
-/// Deliberately holds no port and no collaborator: it is a pure state machine
-/// driven by `step(dt, now)`. Given the same initial state and the same
-/// sequence of (command, dt, now), it produces exactly the same trajectory —
-/// which is what lets a full 10-minute flight be tested in microseconds.
+/// It owns exactly one mutable thing — the current `FlightState` — and does no
+/// computation of its own. Commands become state-machine events; `step` calls
+/// the pure dynamics and then feeds back the events the new state implies.
 ///
-/// State transitions:
-///   Disarmed --arm--> Takeoff --altitude reached--> Hold
-///   Hold --goto--> Goto --target reached--> Hold
-///   Hold --manual--> Manual --input timeout--> Hold
-///   any(armed) --land--> Land --touchdown--> Disarmed
-///   Hold --disarm, alt < 0.5--> Disarmed
-///   any(armed) --disarm, alt >= 0.5--> Land   (specification)
+/// The split is deliberate and is the whole point of the design:
+///   * `fsm::kTransitions` declares *what may happen* (declarative);
+///   * `dynamics::*` computes *how the aircraft moves* (pure functions);
+///   * this class only sequences the two (imperative, and trivially small).
+///
+/// Consequences: the trajectory is reproducible bit for bit, the class holds no
+/// thread, no clock and no port, and a full flight can be replayed in a test in
+/// microseconds.
 class FlightController {
 public:
-    explicit FlightController(FlightConfig config = {}) noexcept;
+    explicit FlightController(FlightConfig config = {}) noexcept : config_{config} {}
 
-    // --- Commands. Pure decisions: they mutate state but perform no I/O. ---
-    CommandResult arm() noexcept;
-    CommandResult disarm() noexcept;
-    CommandResult goto_target(const Vec3& target) noexcept;
-    CommandResult land() noexcept;
-    CommandResult manual_input(const Vec3& normalised_axes, Instant now) noexcept;
+    // --- Commands. Each is one line: build the event, apply the table. ------
+    CommandResult arm() noexcept { return dispatch(fsm::Event::Arm, {}); }
+    CommandResult disarm() noexcept { return dispatch(fsm::Event::Disarm, {}); }
+    CommandResult land() noexcept { return dispatch(fsm::Event::Land, {}); }
 
-    /// Advances the simulation. `now` is used only for the manual-input
-    /// timeout; nothing here reads a clock.
+    CommandResult goto_target(const Vec3& target) noexcept {
+        return dispatch(fsm::Event::Goto, fsm::EventPayload{target, {}});
+    }
+
+    CommandResult manual_input(const Vec3& axes, Instant now) noexcept {
+        const Vec3 clamped = kinematics::clamp_to_unit_ball(
+            Vec3{clamp(axes.x, -1.0, 1.0), clamp(axes.y, -1.0, 1.0), clamp(axes.z, -1.0, 1.0)});
+        return dispatch(fsm::manual_event(clamped), fsm::EventPayload{clamped, now});
+    }
+
+    /// One simulation tick. `now` is injected, never read from a clock.
     void step(Seconds dt, Instant now) noexcept;
 
-    [[nodiscard]] const Telemetry& telemetry() const noexcept { return telemetry_; }
+    [[nodiscard]] const Telemetry& telemetry() const noexcept { return state_.telemetry; }
+    [[nodiscard]] const FlightState& state() const noexcept { return state_; }
     [[nodiscard]] const FlightConfig& config() const noexcept { return config_; }
-    [[nodiscard]] std::optional<Vec3> target() const noexcept { return target_; }
-
-    /// True when the last step had its position clamped by the fence.
-    /// Exposed so the GUI and the tests can observe the constraint firing.
+    [[nodiscard]] std::optional<Vec3> target() const noexcept { return state_.target; }
     [[nodiscard]] bool fence_engaged() const noexcept { return fence_engaged_; }
 
-    /// Mode transition that occurred during the last `step`, if any.
-    /// Lets the service emit an event without the controller owning a log port.
-    [[nodiscard]] std::optional<FlightMode> consume_transition() noexcept;
+    /// Mode transition that occurred since the last call, if any. Lets the
+    /// service emit an event without the controller owning a log port.
+    [[nodiscard]] std::optional<FlightMode> consume_transition() noexcept {
+        const auto transition = transition_;
+        transition_.reset();
+        return transition;
+    }
 
 private:
-    [[nodiscard]] Vec3 desired_velocity(Instant now) const noexcept;
-    void enter(FlightMode mode) noexcept;
+    CommandResult dispatch(fsm::Event event, const fsm::EventPayload& payload) noexcept {
+        const fsm::Outcome outcome = fsm::apply(state_, config_, event, payload);
+        state_ = outcome.state;
+        if (outcome.mode_changed) {
+            transition_ = state_.mode();
+        }
+        return outcome.result;
+    }
 
     FlightConfig config_;
-    Telemetry telemetry_{};
-    std::optional<Vec3> target_{};
-    Vec3 manual_axes_{};
-    Instant last_manual_input_{};
+    FlightState state_{};
     bool fence_engaged_{false};
     std::optional<FlightMode> transition_{};
 };

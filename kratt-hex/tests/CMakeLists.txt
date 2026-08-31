@@ -3,7 +3,8 @@
 # hexagon, this target stops linking.
 add_executable(DomainTests
     domain/test_geofence.cpp
-    domain/test_kinematics.cpp)
+    domain/test_kinematics.cpp
+    domain/test_state_machine.cpp)
 target_link_libraries(DomainTests PRIVATE kratt_domain gtest_main kratt_warnings)
 
 add_executable(IntegrationTests
