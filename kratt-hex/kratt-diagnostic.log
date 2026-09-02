@@ -1,5 +1,5 @@
 ==================================================================
- KRATT DIAGNOSTIC  -  Tue Sep  1 16:36:44 CEST 2026
+ KRATT DIAGNOSTIC  -  Wed Sep  2 13:21:14 CEST 2026
 ==================================================================
 
 --- STEP 1/4 : toolchain -----------------------------------------
@@ -25,11 +25,11 @@ git version 2.43.0
   OK      libs/googletest/CMakeLists.txt
 --- libs/ contents ---
 total 4
-drwxrwxrwx 1 lukas lukas 4096 Aug 31 17:52 .
-drwxrwxrwx 1 lukas lukas 4096 Sep  1 16:35 ..
--rwxrwxrwx 1 lukas lukas 2348 Aug 31 17:33 CMakeLists.txt
-drwxrwxrwx 1 lukas lukas 4096 Aug 31 17:52 googletest
-drwxrwxrwx 1 lukas lukas 4096 Aug 31 17:52 mavlink
+drwxrwxrwx 1 root root 4096 Aug 31 17:52 .
+drwxrwxrwx 1 root root 4096 Sep  2 13:19 ..
+-rwxrwxrwx 1 root root 2348 Aug 31 17:33 CMakeLists.txt
+drwxrwxrwx 1 root root 4096 Aug 31 17:52 googletest
+drwxrwxrwx 1 root root 4096 Aug 31 17:52 mavlink
 
 --- STEP 3/4 : configure + build ---------------------------------
 $ rm -rf build
@@ -58,7 +58,7 @@ $ cmake -S . -B build -DKRATT_BUILD_GUI=OFF -DCMAKE_BUILD_TYPE=Debug
 --   GUI        : OFF
 --   sanitizers : OFF
 -- 
--- Configuring done (4.4s)
+-- Configuring done (4.5s)
 -- Generating done (1.1s)
 -- Build files have been written to: /mnt/c/Users/User/Documents/GitHub/KrattWorksAssignment/kratt-hex/build
   -> exit 0
@@ -72,8 +72,8 @@ $ cmake --build build -j2
 [ 18%] Linking CXX static library libkratt_domain.a
 [ 18%] Built target kratt_domain
 [ 21%] Building CXX object src/CMakeFiles/kratt_adapters.dir/adapters/transport/udp_socket.cpp.o
-[ 25%] Linking CXX static library ../../../lib/libgtest.a
-[ 28%] Building CXX object src/CMakeFiles/kratt_adapters.dir/adapters/transport/loopback_transport.cpp.o
+[ 25%] Building CXX object src/CMakeFiles/kratt_adapters.dir/adapters/transport/loopback_transport.cpp.o
+[ 28%] Linking CXX static library ../../../lib/libgtest.a
 [ 28%] Built target gtest
 [ 31%] Building CXX object src/CMakeFiles/kratt_adapters.dir/adapters/mavlink/mavlink_codec.cpp.o
 [ 34%] Building CXX object src/CMakeFiles/kratt_adapters.dir/adapters/mavlink/message_channel.cpp.o
@@ -84,9 +84,9 @@ $ cmake --build build -j2
 [ 50%] Linking CXX static library libkratt_adapters.a
 [ 50%] Built target kratt_adapters
 [ 53%] Building CXX object src/CMakeFiles/kratt_app.dir/app/drone_composition.cpp.o
-[ 56%] Linking CXX static library ../../../lib/libgtest_main.a
-[ 56%] Built target gtest_main
-[ 59%] Building CXX object src/CMakeFiles/kratt_app.dir/app/gcs_composition.cpp.o
+[ 56%] Building CXX object src/CMakeFiles/kratt_app.dir/app/gcs_composition.cpp.o
+[ 59%] Linking CXX static library ../../../lib/libgtest_main.a
+[ 59%] Built target gtest_main
 [ 62%] Building CXX object tests/CMakeFiles/DomainTests.dir/domain/test_geofence.cpp.o
 [ 65%] Linking CXX static library libkratt_app.a
 [ 65%] Built target kratt_app
@@ -110,11 +110,9 @@ $ cmake --build build -j2
   build OK
 
 --- STEP 4/4 : tests ---------------------------------------------
-  filter: *Geofence*
-$ ./build/bin/DomainTests --gtest_filter=*Geofence* --gtest_color=no
+$ ./build/bin/DomainTests --gtest_color=no
 Running main() from /mnt/c/Users/User/Documents/GitHub/KrattWorksAssignment/kratt-hex/libs/googletest/googletest/src/gtest_main.cc
-Note: Google Test filter = *Geofence*
-[==========] Running 4 tests from 1 test suite.
+[==========] Running 24 tests from 7 test suites.
 [----------] Global test environment set-up.
 [----------] 4 tests from GeofenceTest
 [ RUN      ] GeofenceTest.ContainsIncludesTheBoundary
@@ -127,16 +125,88 @@ Note: Google Test filter = *Geofence*
 [       OK ] GeofenceTest.ClampAlwaysProducesAContainedPoint (0 ms)
 [----------] 4 tests from GeofenceTest (1 ms total)
 
+[----------] 5 tests from KinematicsTest
+[ RUN      ] KinematicsTest.IntegrateIsExactOverManySmallSteps
+[       OK ] KinematicsTest.IntegrateIsExactOverManySmallSteps (0 ms)
+[ RUN      ] KinematicsTest.DeriveRecoversTheVelocityThatWasIntegrated
+[       OK ] KinematicsTest.DeriveRecoversTheVelocityThatWasIntegrated (0 ms)
+[ RUN      ] KinematicsTest.VelocityTowardsHasTheCommandedMagnitude
+[       OK ] KinematicsTest.VelocityTowardsHasTheCommandedMagnitude (0 ms)
+[ RUN      ] KinematicsTest.VelocityTowardsIsNullWithinTolerance
+[       OK ] KinematicsTest.VelocityTowardsIsNullWithinTolerance (0 ms)
+[ RUN      ] KinematicsTest.DiagonalStickInputNeverExceedsTheEnvelope
+[       OK ] KinematicsTest.DiagonalStickInputNeverExceedsTheEnvelope (0 ms)
+[----------] 5 tests from KinematicsTest (1 ms total)
+
+[----------] 6 tests from TransitionTableTest
+[ RUN      ] TransitionTableTest.EveryRowHasAnAction
+[       OK ] TransitionTableTest.EveryRowHasAnAction (0 ms)
+[ RUN      ] TransitionTableTest.NoRowIsUnreachable
+[       OK ] TransitionTableTest.NoRowIsUnreachable (0 ms)
+[ RUN      ] TransitionTableTest.GuardedRowsPrecedeTheirCatchAll
+[       OK ] TransitionTableTest.GuardedRowsPrecedeTheirCatchAll (0 ms)
+[ RUN      ] TransitionTableTest.NoEventCanEverArmTheDroneExceptArm
+[       OK ] TransitionTableTest.NoEventCanEverArmTheDroneExceptArm (0 ms)
+[ RUN      ] TransitionTableTest.DisarmedStateIsAlwaysConsistentWithArmedFlag
+[       OK ] TransitionTableTest.DisarmedStateIsAlwaysConsistentWithArmedFlag (0 ms)
+[ RUN      ] TransitionTableTest.UnmatchedEventLeavesTheStateUntouched
+[       OK ] TransitionTableTest.UnmatchedEventLeavesTheStateUntouched (0 ms)
+[----------] 6 tests from TransitionTableTest (1 ms total)
+
+[----------] 3 tests from DisarmRuleTest
+[ RUN      ] DisarmRuleTest.DisarmBelowSafetyAltitudeCutsTheMotors
+[       OK ] DisarmRuleTest.DisarmBelowSafetyAltitudeCutsTheMotors (0 ms)
+[ RUN      ] DisarmRuleTest.DisarmAtOrAboveSafetyAltitudeBecomesALanding
+[       OK ] DisarmRuleTest.DisarmAtOrAboveSafetyAltitudeBecomesALanding (0 ms)
+[ RUN      ] DisarmRuleTest.NoModeCanBeDisarmedInFlightInOneStep
+[       OK ] DisarmRuleTest.NoModeCanBeDisarmedInFlightInOneStep (0 ms)
+[----------] 3 tests from DisarmRuleTest (0 ms total)
+
+[----------] 1 test from ManualRuleTest
+[ RUN      ] ManualRuleTest.AutomaticPhasesRejectStickInput
+[       OK ] ManualRuleTest.AutomaticPhasesRejectStickInput (0 ms)
+[----------] 1 test from ManualRuleTest (0 ms total)
+
+[----------] 1 test from GotoRuleTest
+[ RUN      ] GotoRuleTest.TargetOutsideTheFenceIsClampedNotRejected
+[       OK ] GotoRuleTest.TargetOutsideTheFenceIsClampedNotRejected (0 ms)
+[----------] 1 test from GotoRuleTest (0 ms total)
+
+[----------] 4 tests from DynamicsTest
+[ RUN      ] DynamicsTest.IntegrateIsReferentiallyTransparent
+[       OK ] DynamicsTest.IntegrateIsReferentiallyTransparent (0 ms)
+[ RUN      ] DynamicsTest.IntegrateDoesNotMutateItsArgument
+[       OK ] DynamicsTest.IntegrateDoesNotMutateItsArgument (0 ms)
+[ RUN      ] DynamicsTest.SpeedNeverExceedsTheEnvelopeInAnyMode
+[       OK ] DynamicsTest.SpeedNeverExceedsTheEnvelopeInAnyMode (0 ms)
+[ RUN      ] DynamicsTest.FenceEngagedIsReportedWhenTheClampFires
+[       OK ] DynamicsTest.FenceEngagedIsReportedWhenTheClampFires (0 ms)
+[----------] 4 tests from DynamicsTest (0 ms total)
+
 [----------] Global test environment tear-down
-[==========] 4 tests from 1 test suite ran. (1 ms total)
-[  PASSED  ] 4 tests.
+[==========] 24 tests from 7 test suites ran. (7 ms total)
+[  PASSED  ] 24 tests.
   -> exit 0
 
-$ ./build/bin/IntegrationTests --gtest_filter=*Geofence* --gtest_color=no
+$ ./build/bin/IntegrationTests --gtest_color=no
 Running main() from /mnt/c/Users/User/Documents/GitHub/KrattWorksAssignment/kratt-hex/libs/googletest/googletest/src/gtest_main.cc
-Note: Google Test filter = *Geofence*
-[==========] Running 6 tests from 1 test suite.
+[==========] Running 19 tests from 4 test suites.
 [----------] Global test environment set-up.
+[----------] 6 tests from DisarmSafetyIT
+[ RUN      ] DisarmSafetyIT.Disarming_allowed_if_altitude_is_below_0_5m
+[       OK ] DisarmSafetyIT.Disarming_allowed_if_altitude_is_below_0_5m (0 ms)
+[ RUN      ] DisarmSafetyIT.Disarming_while_flying_enters_land_mode_instead
+[       OK ] DisarmSafetyIT.Disarming_while_flying_enters_land_mode_instead (0 ms)
+[ RUN      ] DisarmSafetyIT.Disarm_while_flying_eventually_disarms_after_landing
+[       OK ] DisarmSafetyIT.Disarm_while_flying_eventually_disarms_after_landing (2 ms)
+[ RUN      ] DisarmSafetyIT.Descent_is_gentle_compared_to_the_climb_rate
+[       OK ] DisarmSafetyIT.Descent_is_gentle_compared_to_the_climb_rate (0 ms)
+[ RUN      ] DisarmSafetyIT.Repeated_disarm_requests_during_landing_do_not_abort_it
+[       OK ] DisarmSafetyIT.Repeated_disarm_requests_during_landing_do_not_abort_it (2 ms)
+[ RUN      ] DisarmSafetyIT.Gcs_observes_the_disarm_through_heartbeat_telemetry
+[       OK ] DisarmSafetyIT.Gcs_observes_the_disarm_through_heartbeat_telemetry (2 ms)
+[----------] 6 tests from DisarmSafetyIT (8 ms total)
+
 [----------] 6 tests from GeofenceIT
 [ RUN      ] GeofenceIT.Manual_input_cannot_push_the_drone_past_the_north_boundary
 [       OK ] GeofenceIT.Manual_input_cannot_push_the_drone_past_the_north_boundary (2 ms)
@@ -145,19 +215,134 @@ Note: Google Test filter = *Geofence*
 [ RUN      ] GeofenceIT.Reported_velocity_is_zero_on_the_clamped_axis
 [       OK ] GeofenceIT.Reported_velocity_is_zero_on_the_clamped_axis (2 ms)
 [ RUN      ] GeofenceIT.Drone_still_slides_along_the_boundary_on_the_free_axis
-[       OK ] GeofenceIT.Drone_still_slides_along_the_boundary_on_the_free_axis (2 ms)
+[       OK ] GeofenceIT.Drone_still_slides_along_the_boundary_on_the_free_axis (3 ms)
 [ RUN      ] GeofenceIT.Goto_outside_the_fence_is_clamped_not_ignored
 [       OK ] GeofenceIT.Goto_outside_the_fence_is_clamped_not_ignored (1 ms)
 [ RUN      ] GeofenceIT.Takeoff_stops_at_the_ceiling_when_it_is_below_20m
 [       OK ] GeofenceIT.Takeoff_stops_at_the_ceiling_when_it_is_below_20m (0 ms)
 [----------] 6 tests from GeofenceIT (14 ms total)
 
+[----------] 5 tests from ConnectionIT
+[ RUN      ] ConnectionIT.Gcs_is_disconnected_before_any_heartbeat
+[       OK ] ConnectionIT.Gcs_is_disconnected_before_any_heartbeat (0 ms)
+[ RUN      ] ConnectionIT.Gcs_becomes_connected_after_the_first_heartbeat
+[       OK ] ConnectionIT.Gcs_becomes_connected_after_the_first_heartbeat (0 ms)
+[ RUN      ] ConnectionIT.Gcs_goes_disconnected_after_a_link_partition
+[       OK ] ConnectionIT.Gcs_goes_disconnected_after_a_link_partition (0 ms)
+[ RUN      ] ConnectionIT.Gcs_reconnects_when_the_partition_is_healed
+[       OK ] ConnectionIT.Gcs_reconnects_when_the_partition_is_healed (0 ms)
+[ RUN      ] ConnectionIT.Connection_survives_twenty_percent_packet_loss
+[       OK ] ConnectionIT.Connection_survives_twenty_percent_packet_loss (0 ms)
+[----------] 5 tests from ConnectionIT (1 ms total)
+
+[----------] 2 tests from TelemetryIT
+[ RUN      ] TelemetryIT.Gcs_sees_the_position_the_drone_actually_holds
+[       OK ] TelemetryIT.Gcs_sees_the_position_the_drone_actually_holds (0 ms)
+[ RUN      ] TelemetryIT.Publication_rate_is_10Hz
+[       OK ] TelemetryIT.Publication_rate_is_10Hz (0 ms)
+[----------] 2 tests from TelemetryIT (2 ms total)
+
 [----------] Global test environment tear-down
-[==========] 6 tests from 1 test suite ran. (15 ms total)
-[  PASSED  ] 6 tests.
+[==========] 19 tests from 4 test suites ran. (28 ms total)
+[  PASSED  ] 19 tests.
   -> exit 0
 
-  10 test(s) ran
+$ bash -c cd build && ctest --output-on-failure
+Test project /mnt/c/Users/User/Documents/GitHub/KrattWorksAssignment/kratt-hex/build
+      Start  1: GeofenceTest.ContainsIncludesTheBoundary
+ 1/44 Test  #1: GeofenceTest.ContainsIncludesTheBoundary .....................................   Passed    0.02 sec
+      Start  2: GeofenceTest.ContainsRejectsOutsidePoints
+ 2/44 Test  #2: GeofenceTest.ContainsRejectsOutsidePoints ....................................   Passed    0.02 sec
+      Start  3: GeofenceTest.ClampIsIdentityInside
+ 3/44 Test  #3: GeofenceTest.ClampIsIdentityInside ...........................................   Passed    0.02 sec
+      Start  4: GeofenceTest.ClampAlwaysProducesAContainedPoint
+ 4/44 Test  #4: GeofenceTest.ClampAlwaysProducesAContainedPoint ..............................   Passed    0.02 sec
+      Start  5: KinematicsTest.IntegrateIsExactOverManySmallSteps
+ 5/44 Test  #5: KinematicsTest.IntegrateIsExactOverManySmallSteps ............................   Passed    0.02 sec
+      Start  6: KinematicsTest.DeriveRecoversTheVelocityThatWasIntegrated
+ 6/44 Test  #6: KinematicsTest.DeriveRecoversTheVelocityThatWasIntegrated ....................   Passed    0.02 sec
+      Start  7: KinematicsTest.VelocityTowardsHasTheCommandedMagnitude
+ 7/44 Test  #7: KinematicsTest.VelocityTowardsHasTheCommandedMagnitude .......................   Passed    0.01 sec
+      Start  8: KinematicsTest.VelocityTowardsIsNullWithinTolerance
+ 8/44 Test  #8: KinematicsTest.VelocityTowardsIsNullWithinTolerance ..........................   Passed    0.02 sec
+      Start  9: KinematicsTest.DiagonalStickInputNeverExceedsTheEnvelope
+ 9/44 Test  #9: KinematicsTest.DiagonalStickInputNeverExceedsTheEnvelope .....................   Passed    0.02 sec
+      Start 10: TransitionTableTest.EveryRowHasAnAction
+10/44 Test #10: TransitionTableTest.EveryRowHasAnAction ......................................   Passed    0.02 sec
+      Start 11: TransitionTableTest.NoRowIsUnreachable
+11/44 Test #11: TransitionTableTest.NoRowIsUnreachable .......................................   Passed    0.02 sec
+      Start 12: TransitionTableTest.GuardedRowsPrecedeTheirCatchAll
+12/44 Test #12: TransitionTableTest.GuardedRowsPrecedeTheirCatchAll ..........................   Passed    0.02 sec
+      Start 13: TransitionTableTest.NoEventCanEverArmTheDroneExceptArm
+13/44 Test #13: TransitionTableTest.NoEventCanEverArmTheDroneExceptArm .......................   Passed    0.02 sec
+      Start 14: TransitionTableTest.DisarmedStateIsAlwaysConsistentWithArmedFlag
+14/44 Test #14: TransitionTableTest.DisarmedStateIsAlwaysConsistentWithArmedFlag .............   Passed    0.02 sec
+      Start 15: TransitionTableTest.UnmatchedEventLeavesTheStateUntouched
+15/44 Test #15: TransitionTableTest.UnmatchedEventLeavesTheStateUntouched ....................   Passed    0.02 sec
+      Start 16: DisarmRuleTest.DisarmBelowSafetyAltitudeCutsTheMotors
+16/44 Test #16: DisarmRuleTest.DisarmBelowSafetyAltitudeCutsTheMotors ........................   Passed    0.02 sec
+      Start 17: DisarmRuleTest.DisarmAtOrAboveSafetyAltitudeBecomesALanding
+17/44 Test #17: DisarmRuleTest.DisarmAtOrAboveSafetyAltitudeBecomesALanding ..................   Passed    0.02 sec
+      Start 18: DisarmRuleTest.NoModeCanBeDisarmedInFlightInOneStep
+18/44 Test #18: DisarmRuleTest.NoModeCanBeDisarmedInFlightInOneStep ..........................   Passed    0.02 sec
+      Start 19: ManualRuleTest.AutomaticPhasesRejectStickInput
+19/44 Test #19: ManualRuleTest.AutomaticPhasesRejectStickInput ...............................   Passed    0.02 sec
+      Start 20: GotoRuleTest.TargetOutsideTheFenceIsClampedNotRejected
+20/44 Test #20: GotoRuleTest.TargetOutsideTheFenceIsClampedNotRejected .......................   Passed    0.02 sec
+      Start 21: DynamicsTest.IntegrateIsReferentiallyTransparent
+21/44 Test #21: DynamicsTest.IntegrateIsReferentiallyTransparent .............................   Passed    0.02 sec
+      Start 22: DynamicsTest.IntegrateDoesNotMutateItsArgument
+22/44 Test #22: DynamicsTest.IntegrateDoesNotMutateItsArgument ...............................   Passed    0.03 sec
+      Start 23: DynamicsTest.SpeedNeverExceedsTheEnvelopeInAnyMode
+23/44 Test #23: DynamicsTest.SpeedNeverExceedsTheEnvelopeInAnyMode ...........................   Passed    0.02 sec
+      Start 24: DynamicsTest.FenceEngagedIsReportedWhenTheClampFires
+24/44 Test #24: DynamicsTest.FenceEngagedIsReportedWhenTheClampFires .........................   Passed    0.02 sec
+      Start 25: DisarmSafetyIT.Disarming_allowed_if_altitude_is_below_0_5m
+25/44 Test #25: DisarmSafetyIT.Disarming_allowed_if_altitude_is_below_0_5m ...................   Passed    0.02 sec
+      Start 26: DisarmSafetyIT.Disarming_while_flying_enters_land_mode_instead
+26/44 Test #26: DisarmSafetyIT.Disarming_while_flying_enters_land_mode_instead ...............   Passed    0.02 sec
+      Start 27: DisarmSafetyIT.Disarm_while_flying_eventually_disarms_after_landing
+27/44 Test #27: DisarmSafetyIT.Disarm_while_flying_eventually_disarms_after_landing ..........   Passed    0.02 sec
+      Start 28: DisarmSafetyIT.Descent_is_gentle_compared_to_the_climb_rate
+28/44 Test #28: DisarmSafetyIT.Descent_is_gentle_compared_to_the_climb_rate ..................   Passed    0.02 sec
+      Start 29: DisarmSafetyIT.Repeated_disarm_requests_during_landing_do_not_abort_it
+29/44 Test #29: DisarmSafetyIT.Repeated_disarm_requests_during_landing_do_not_abort_it .......   Passed    0.02 sec
+      Start 30: DisarmSafetyIT.Gcs_observes_the_disarm_through_heartbeat_telemetry
+30/44 Test #30: DisarmSafetyIT.Gcs_observes_the_disarm_through_heartbeat_telemetry ...........   Passed    0.02 sec
+      Start 31: GeofenceIT.Manual_input_cannot_push_the_drone_past_the_north_boundary
+31/44 Test #31: GeofenceIT.Manual_input_cannot_push_the_drone_past_the_north_boundary ........   Passed    0.03 sec
+      Start 32: GeofenceIT.Position_stays_inside_the_fence_under_sustained_corner_pressure
+32/44 Test #32: GeofenceIT.Position_stays_inside_the_fence_under_sustained_corner_pressure ...   Passed    0.02 sec
+      Start 33: GeofenceIT.Reported_velocity_is_zero_on_the_clamped_axis
+33/44 Test #33: GeofenceIT.Reported_velocity_is_zero_on_the_clamped_axis .....................   Passed    0.02 sec
+      Start 34: GeofenceIT.Drone_still_slides_along_the_boundary_on_the_free_axis
+34/44 Test #34: GeofenceIT.Drone_still_slides_along_the_boundary_on_the_free_axis ............   Passed    0.03 sec
+      Start 35: GeofenceIT.Goto_outside_the_fence_is_clamped_not_ignored
+35/44 Test #35: GeofenceIT.Goto_outside_the_fence_is_clamped_not_ignored .....................   Passed    0.02 sec
+      Start 36: GeofenceIT.Takeoff_stops_at_the_ceiling_when_it_is_below_20m
+36/44 Test #36: GeofenceIT.Takeoff_stops_at_the_ceiling_when_it_is_below_20m .................   Passed    0.02 sec
+      Start 37: ConnectionIT.Gcs_is_disconnected_before_any_heartbeat
+37/44 Test #37: ConnectionIT.Gcs_is_disconnected_before_any_heartbeat ........................   Passed    0.02 sec
+      Start 38: ConnectionIT.Gcs_becomes_connected_after_the_first_heartbeat
+38/44 Test #38: ConnectionIT.Gcs_becomes_connected_after_the_first_heartbeat .................   Passed    0.02 sec
+      Start 39: ConnectionIT.Gcs_goes_disconnected_after_a_link_partition
+39/44 Test #39: ConnectionIT.Gcs_goes_disconnected_after_a_link_partition ....................   Passed    0.02 sec
+      Start 40: ConnectionIT.Gcs_reconnects_when_the_partition_is_healed
+40/44 Test #40: ConnectionIT.Gcs_reconnects_when_the_partition_is_healed .....................   Passed    0.02 sec
+      Start 41: ConnectionIT.Connection_survives_twenty_percent_packet_loss
+41/44 Test #41: ConnectionIT.Connection_survives_twenty_percent_packet_loss ..................   Passed    0.02 sec
+      Start 42: TelemetryIT.Gcs_sees_the_position_the_drone_actually_holds
+42/44 Test #42: TelemetryIT.Gcs_sees_the_position_the_drone_actually_holds ...................   Passed    0.02 sec
+      Start 43: TelemetryIT.Publication_rate_is_10Hz
+43/44 Test #43: TelemetryIT.Publication_rate_is_10Hz .........................................   Passed    0.02 sec
+      Start 44: domain_purity
+44/44 Test #44: domain_purity ................................................................   Passed    0.15 sec
+
+100% tests passed, 0 tests failed out of 44
+
+Total Test time (real) =   1.24 sec
+  -> exit 0
+
 
 ==================================================================
  Log written to: /mnt/c/Users/User/Documents/GitHub/KrattWorksAssignment/kratt-hex/kratt-diagnostic.log
